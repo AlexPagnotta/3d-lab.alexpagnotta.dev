@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-white text-black cursor-default leading-none;
+  }
+
+  body {
+    @apply font-sans antialiased text-body-3 font-light overflow-x-hidden min-w-[320px];
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+}
+
+@layer components {
+}
+
+@layer utilities {
+  /* Other utilities */
+
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
