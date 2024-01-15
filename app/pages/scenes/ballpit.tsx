@@ -1,7 +1,7 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 
-export const App = () => {
+export const Ballpit = () => {
   return (
     <Canvas
       shadows
