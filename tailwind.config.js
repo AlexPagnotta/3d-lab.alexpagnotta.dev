@@ -1,5 +1,6 @@
 import defaultTheme from "tailwindcss/defaultTheme";
 import addPlugin from "tailwindcss/plugin";
+
 import {
   baseFontSizePx,
   baseBrowserFontSizePx,

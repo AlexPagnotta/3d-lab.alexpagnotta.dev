@@ -1,3 +1,6 @@
+/* eslint-disable spaced-comment */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
