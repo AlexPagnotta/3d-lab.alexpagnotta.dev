@@ -7,7 +7,6 @@ export const App = () => {
   return (
     <Switch>
       <Route path="/ballpit" component={Ballpit} />
-      <Route path="/ballpit-2" component={Ballpit} />
       <Route component={NotFound} />
     </Switch>
   );
