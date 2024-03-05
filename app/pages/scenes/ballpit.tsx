@@ -174,7 +174,7 @@ const Scene = () => {
   const { debugView, perf, orbitControls, axesHelper } = useControls("Debug", {
     debugView: false,
     perf: false,
-    orbitControls: true,
+    orbitControls: false,
     axesHelper: false,
   });
 
