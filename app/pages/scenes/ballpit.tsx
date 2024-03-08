@@ -68,14 +68,15 @@ const Container = () => {
   const { width: viewportWidth, height: viewportHeight } = useThree((state) => state.viewport);
 
   const panelsThickness = isMdUp ? PANELS_THICKNESS_DESKTOP : PANELS_THICKNESS;
+  const panelBottomThickness = PANELS_THICKNESS_DESKTOP;
 
   const panelsWidth = viewportWidth - panelsThickness * 2;
   const panelsHeight = viewportHeight + PANELS_OFFSET;
 
   return (
-    <RigidBody type="fixed" colliders={false} position={[0, -viewportHeight / 2 + panelsThickness, 0]}>
+    <RigidBody type="fixed" colliders={false} position={[0, -viewportHeight / 2 + panelBottomThickness, 0]}>
       {/* Bottom */}
-      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["bottom"]} receiveShadow>
+      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelBottomThickness)["bottom"]} receiveShadow>
         <meshStandardMaterial color={CONTAINER_COLOR} />
       </Box>
       <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["bottom"]} />
