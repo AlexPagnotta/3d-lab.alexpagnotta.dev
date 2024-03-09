@@ -1,6 +1,6 @@
-# 3D Lab | alexpagnotta.dev
+# Lab | alexpagnotta.dev
 
-Source code of 3d Lab section of my personal website [alexpagnotta.dev](https://alexpagnotta.dev).
+Source code of Lab section of my personal website [alexpagnotta.dev](https://alexpagnotta.dev).
 
 ## Stack
 
