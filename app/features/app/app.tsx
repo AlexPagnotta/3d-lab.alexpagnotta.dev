@@ -1,7 +1,7 @@
 import { Route, Switch } from "wouter";
 
+import { Ballpit } from "~/pages/experiments/ballpit";
 import { NotFound } from "~/pages/not-found";
-import { Ballpit } from "~/pages/scenes/ballpit";
 
 export const App = () => {
   return (
