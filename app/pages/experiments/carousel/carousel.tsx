@@ -45,7 +45,7 @@ const Options: { breakpoint: { md: OptionItem; sm: OptionItem } } = {
   },
 };
 
-const ITEMS = [...Array(100)].map((_, i) => ({
+const ITEMS = [...Array(1000)].map((_, i) => ({
   id: i + 1,
 }));
 
@@ -168,26 +168,29 @@ export const Carousel = () => {
     updateVirtualizedItems();
   });
 
-  const bindGestures = useGesture({
-    onDrag: ({ offset: [x], direction: [dx], dragging }) => {
-      if (!dx) return;
+  const bindGestures = useGesture(
+    {
+      onDrag: ({ offset: [x], direction: [dx], dragging }) => {
+        if (!dx) return;
 
-      // We use wheelOffset on drag and viceversa to sync the two gestures when switching between them
-      userInteraction.current = dragging || false;
-      dragOffset.current = x;
-      currentXOffset.current = wheelOffset.current + x;
-    },
-    onDragEnd: () => {
-      userInteraction.current = false;
-    },
-    onWheel: ({ offset: [, y], direction: [, dy], wheeling }) => {
-      if (!dy) return;
+        // We use wheelOffset on drag and viceversa to sync the two gestures when switching between them
+        userInteraction.current = dragging || false;
+        dragOffset.current = x;
+        currentXOffset.current = wheelOffset.current + x;
+      },
+      onDragEnd: () => {
+        userInteraction.current = false;
+      },
+      onWheel: ({ offset: [, y], direction: [, dy], wheeling }) => {
+        if (!dy) return;
 
-      userInteraction.current = wheeling || false;
-      wheelOffset.current = y;
-      currentXOffset.current = dragOffset.current + y;
+        userInteraction.current = wheeling || false;
+        wheelOffset.current = y;
+        currentXOffset.current = dragOffset.current + y;
+      },
     },
-  });
+    { drag: { delay: true } }
+  );
 
   return (
     <div className="w-full h-full bg-white flex items-center">
