@@ -1,8 +1,11 @@
 import { Suspense, lazy } from "react";
 import { Route, Switch } from "wouter";
 
+const Carousel = lazy(() =>
+  import("~/pages/experiments/carousel/carousel").then((module) => ({ default: module.Carousel }))
+);
+const Ballpit = lazy(() => import("~/pages/experiments/ballpit").then((module) => ({ default: module.Ballpit })));
 const NotFound = lazy(() => import("~/pages/not-found").then((module) => ({ default: module.NotFound })));
-const Ballpit = lazy(() => import("~/pages/scenes/ballpit").then((module) => ({ default: module.Ballpit })));
 
 export const App = () => {
   return (
@@ -10,6 +13,11 @@ export const App = () => {
       <Route path="/ballpit">
         <Suspense>
           <Ballpit />
+        </Suspense>
+      </Route>
+      <Route path="/carousel">
+        <Suspense>
+          <Carousel />
         </Suspense>
       </Route>
       <Route>

@@ -17,10 +17,14 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@popmotion/popcorn": "0.4.4",
     "@react-three/drei": "9.92.7",
     "@react-three/fiber": "8.15.16",
     "@react-three/postprocessing": "2.15.13",
     "@react-three/rapier": "1.2.1",
+    "@use-gesture/react": "10.3.0",
+    "class-variance-authority": "0.7.0",
+    "framer-motion": "11.0.8",
     "leva": "0.9.35",
     "r3f-perf": "7.1.2",
     "react": "^18.2.0",

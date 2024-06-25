@@ -1,4 +1,14 @@
 {
+  "typescript.tsdk": "node_modules/typescript/lib",
+  // Enable intellisense for cva and other string variables
+  // The first item of each sub array is the regex to match the "container" where we have to look into, for example: "cva( ... )" or "const ...Styles = ...;"
+  // the second item is the regex to match the actual strings where we want suggestions
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"], // Matches styles in cva objects
+    ["\\w+Styles\\s*=\\s([^;]+)", "[\"'`]([^\"'`]*).*?[\"'`]"] // Matches styles in variables whose name ends with "Styles", includes arrays, objects etc.
+  ],
+  "tailwindCSS.classAttributes": ["class", "className", ".*Styles"], // Matches style in class and className attributes, and variables that end in "Styles"
+
   "files.associations": {
     "*.css": "tailwindcss"
   }
