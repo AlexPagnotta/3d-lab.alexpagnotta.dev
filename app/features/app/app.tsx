@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 
 const Carousel = lazy(() =>
   import("~/pages/experiments/carousel/carousel").then((module) => ({ default: module.Carousel }))
@@ -10,6 +10,9 @@ const NotFound = lazy(() => import("~/pages/not-found").then((module) => ({ defa
 export const App = () => {
   return (
     <Switch>
+      <Route path="/">
+        <Redirect to="/ballpit" />
+      </Route>
       <Route path="/ballpit">
         <Suspense>
           <Ballpit />
