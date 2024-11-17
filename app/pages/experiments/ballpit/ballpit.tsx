@@ -5,33 +5,46 @@ import {
   InstancedRigidBodies,
   type InstancedRigidBodyProps,
   Physics,
-  type RapierRigidBody,
   RigidBody,
 } from "@react-three/rapier";
-import { useControls } from "leva";
+import { Leva, useControls } from "leva";
 import { Perf } from "r3f-perf";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { MeshStandardMaterial, MeshToonMaterial } from "three";
 
-import { useMediaQuery } from "~/features/dom/hooks/use-media-query";
-import { up } from "~/features/dom/utils/screens";
 import { getRandomNumber } from "~/features/utils/random";
 
-const CONTAINER_COLOR = "#ffffff";
-const SPHERES_COLOR = "#ffffff";
-
+// Constants
 const SPHERES_COUNT = 40;
 const SPHERE_RADIUS = 1;
 const SPHERES_GAP = SPHERE_RADIUS * 2;
 
 const PANELS_GAP = SPHERE_RADIUS * 2 + 0.3;
-const PANELS_THICKNESS = 0.5;
-const PANELS_THICKNESS_DESKTOP = 2;
+const PANELS_THICKNESS = 0.1;
 const PANELS_DEPTH = PANELS_GAP;
 
 const PANELS_OFFSET = SPHERES_GAP * SPHERES_COUNT; // How much the panels are offseted from the viewport edge in height
 
-type PanelPosition = "bottom" | "top" | "left" | "right" | "back" | "front";
+const defaultSettings = {
+  debugView: false,
+  perf: false,
+  orbitControls: false,
+  axesHelper: false,
 
+  enabled: true,
+  restitution: 0.5,
+
+  containerColor: "#99b9fc",
+  spheresColor: "#ff7685",
+};
+
+/**
+ * Returns the dimensions and position of each container panel
+ * @param width The width of the container
+ * @param height The height of the container
+ * @param thickness The thickness of the container panels
+ * @returns An object with the dimensions and position of each panel
+ */
 const ContainerPanels = (
   width: number,
   height: number,
@@ -63,67 +76,73 @@ const ContainerPanels = (
   },
 });
 
+// Types
+type PanelPosition = "bottom" | "top" | "left" | "right" | "back" | "front";
+
+/**
+ * The container of the ballpit
+ */
 const Container = () => {
-  const isMdUp = useMediaQuery(up("md"));
   const { width: viewportWidth, height: viewportHeight } = useThree((state) => state.viewport);
 
-  const panelsThickness = isMdUp ? PANELS_THICKNESS_DESKTOP : PANELS_THICKNESS;
-  const panelBottomThickness = PANELS_THICKNESS_DESKTOP;
+  const { containerColor } = useControls("Scene", {
+    containerColor: defaultSettings.containerColor,
+  });
 
-  const panelsWidth = viewportWidth - panelsThickness * 2;
+  const panelsWidth = viewportWidth - PANELS_THICKNESS * 2;
   const panelsHeight = viewportHeight + PANELS_OFFSET;
 
+  // Material is created once, and shared between the panels
+  const containerMaterial = useMemo(() => new MeshStandardMaterial({ color: containerColor }), [containerColor]);
+
+  const containerPanelProps = ContainerPanels(panelsWidth, panelsHeight, PANELS_THICKNESS);
+
   return (
-    <RigidBody type="fixed" colliders={false} position={[0, -viewportHeight / 2 + panelBottomThickness, 0]}>
+    <RigidBody type="fixed" colliders={false} position={[0, -viewportHeight / 2 + PANELS_THICKNESS, 0]}>
       {/* Bottom */}
-      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelBottomThickness)["bottom"]} receiveShadow>
-        <meshStandardMaterial color={CONTAINER_COLOR} />
-      </Box>
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["bottom"]} />
+      <Box {...containerPanelProps["bottom"]} receiveShadow material={containerMaterial} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["bottom"]} />
 
       {/* Top */}
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["top"]} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["top"]} />
 
       {/* Left */}
-      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["left"]} receiveShadow>
-        <meshStandardMaterial color={CONTAINER_COLOR} />
-      </Box>
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["left"]} />
+      <Box {...containerPanelProps["left"]} receiveShadow material={containerMaterial} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["left"]} />
 
       {/* Right */}
-      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["right"]} receiveShadow>
-        <meshStandardMaterial color={CONTAINER_COLOR} />
-      </Box>
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["right"]} />
+      <Box {...containerPanelProps["right"]} receiveShadow material={containerMaterial} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["right"]} />
 
       {/* Back */}
-      <Box {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["back"]} receiveShadow>
-        <meshStandardMaterial color={CONTAINER_COLOR} />
-      </Box>
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["back"]} />
+      <Box {...containerPanelProps["back"]} receiveShadow material={containerMaterial} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["back"]} />
 
       {/* Front */}
-      <CuboidCollider scale={0.5} {...ContainerPanels(panelsWidth, panelsHeight, panelsThickness)["front"]} />
+      <CuboidCollider scale={0.5} {...containerPanelProps["front"]} />
     </RigidBody>
   );
 };
 
-Container.displayName = "Container";
-
+/**
+ * The spheres of the ballpit
+ */
 const Spheres = ({ isCameraReady }: { isCameraReady: boolean }) => {
   const { enabled: animationEnabled, restitution } = useControls("Settings", {
-    enabled: true,
+    enabled: defaultSettings.enabled,
     restitution: {
       min: 0,
       max: 1,
-      value: 0.5,
+      value: defaultSettings.restitution,
       step: 0.1,
     },
   });
 
-  const { height: viewportHeight, width: viewportWidth } = useThree((state) => state.viewport);
+  const { spheresColor } = useControls("Scene", {
+    spheresColor: defaultSettings.spheresColor,
+  });
 
-  const spheresRef = useRef<RapierRigidBody[]>(null);
+  const { height: viewportHeight, width: viewportWidth } = useThree((state) => state.viewport);
 
   // Set viewport size when camera is ready
   // Needed cause on first rerender the viewport size is calculated on the default threeJS scene camera
@@ -134,6 +153,7 @@ const Spheres = ({ isCameraReady }: { isCameraReady: boolean }) => {
     }
   }, [viewportHeight, isCameraReady, initialViewportSize, viewportWidth]);
 
+  // Spheres are instanced, for performance reasons
   const instances = useMemo(() => {
     if (!initialViewportSize) return [];
 
@@ -154,29 +174,37 @@ const Spheres = ({ isCameraReady }: { isCameraReady: boolean }) => {
     return instances;
   }, [initialViewportSize]);
 
+  const spheresMaterial = useMemo(() => new MeshToonMaterial({ color: spheresColor }), [spheresColor]);
+
   return (
     <InstancedRigidBodies
-      ref={spheresRef}
       instances={instances}
       colliders={animationEnabled ? "ball" : false}
       restitution={restitution}
       mass={10}
       key={`spheres_${animationEnabled ? "enabled" : "disabled"}_${restitution}`}
     >
-      <instancedMesh args={[undefined, undefined, SPHERES_COUNT]} count={SPHERES_COUNT} castShadow>
+      <instancedMesh
+        args={[undefined, undefined, SPHERES_COUNT]}
+        count={SPHERES_COUNT}
+        castShadow
+        material={spheresMaterial}
+      >
         <sphereGeometry args={[SPHERE_RADIUS, 32]} />
-        <meshStandardMaterial color={SPHERES_COLOR} />
       </instancedMesh>
     </InstancedRigidBodies>
   );
 };
 
+/**
+ * The scene of the ballpit
+ */
 const Scene = () => {
   const { debugView, perf, orbitControls, axesHelper } = useControls("Debug", {
-    debugView: false,
-    perf: false,
-    orbitControls: false,
-    axesHelper: false,
+    debugView: defaultSettings.debugView,
+    perf: defaultSettings.perf,
+    orbitControls: defaultSettings.orbitControls,
+    axesHelper: defaultSettings.axesHelper,
   });
 
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -195,12 +223,12 @@ const Scene = () => {
           setIsCameraReady(true);
         }}
       />
-      <ambientLight intensity={0.5} />
-      <Environment preset={"city"} />
+      <ambientLight intensity={1} />
+      <Environment preset="warehouse" />
       <SpotLight
         castShadow
-        intensity={500}
-        position={[0, 10, 10]}
+        intensity={700}
+        position={[0, 0, 15]}
         angle={Math.PI / 3}
         penumbra={0.5}
         distance={50}
@@ -221,12 +249,23 @@ const Scene = () => {
   );
 };
 
+/**
+ * The ballpit experiment
+ */
 export const Ballpit = () => {
   return (
-    <Canvas shadows>
-      <Suspense>
-        <Scene />
-      </Suspense>
-    </Canvas>
+    <>
+      <Leva
+        titleBar={{
+          title: "Settings",
+        }}
+      />
+
+      <Canvas shadows>
+        <Suspense>
+          <Scene />
+        </Suspense>
+      </Canvas>
+    </>
   );
 };
