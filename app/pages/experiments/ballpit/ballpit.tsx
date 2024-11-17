@@ -17,6 +17,7 @@ import {
   type PerspectiveCamera as ThreePerspectiveCamera,
 } from "three";
 
+import { isDev } from "~/features/constants";
 import { getRandomNumber } from "~/features/utils/random";
 
 // Constants
@@ -211,7 +212,10 @@ const Spheres = ({ isCameraReady }: { isCameraReady: boolean }) => {
 const Scene = () => {
   const { debugView, perf, orbitControls, axesHelper } = useControls("Debug", {
     debugView: defaultSettings.debugView,
-    perf: defaultSettings.perf,
+    perf: {
+      value: defaultSettings.perf,
+      render: () => isDev,
+    },
     orbitControls: defaultSettings.orbitControls,
     axesHelper: defaultSettings.axesHelper,
   });
