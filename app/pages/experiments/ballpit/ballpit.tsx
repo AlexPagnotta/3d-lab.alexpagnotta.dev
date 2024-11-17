@@ -1,5 +1,5 @@
 import { Box, Environment, OrbitControls, PerspectiveCamera, SpotLight } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   CuboidCollider,
   InstancedRigidBodies,
@@ -9,8 +9,13 @@ import {
 } from "@react-three/rapier";
 import { Leva, useControls } from "leva";
 import { Perf } from "r3f-perf";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { MeshStandardMaterial, MeshToonMaterial } from "three";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MeshStandardMaterial,
+  MeshToonMaterial,
+  Vector3,
+  type PerspectiveCamera as ThreePerspectiveCamera,
+} from "three";
 
 import { getRandomNumber } from "~/features/utils/random";
 
@@ -20,7 +25,7 @@ const SPHERE_RADIUS = 1;
 const SPHERES_GAP = SPHERE_RADIUS * 2;
 
 const PANELS_GAP = SPHERE_RADIUS * 2 + 0.3;
-const PANELS_THICKNESS = 0.1;
+const PANELS_THICKNESS = 0.5;
 const PANELS_DEPTH = PANELS_GAP;
 
 const PANELS_OFFSET = SPHERES_GAP * SPHERES_COUNT; // How much the panels are offseted from the viewport edge in height
@@ -36,6 +41,7 @@ const defaultSettings = {
 
   containerColor: "#99b9fc",
   spheresColor: "#ff7685",
+  backgroundColor: "#ffd1d6",
 };
 
 /**
@@ -142,16 +148,19 @@ const Spheres = ({ isCameraReady }: { isCameraReady: boolean }) => {
     spheresColor: defaultSettings.spheresColor,
   });
 
-  const { height: viewportHeight, width: viewportWidth } = useThree((state) => state.viewport);
+  const threeStateGetter = useThree((state) => state.get);
 
   // Set viewport size when camera is ready
   // Needed cause on first rerender the viewport size is calculated on the default threeJS scene camera
   const [initialViewportSize, setInitialViewportSize] = useState<{ width: number; height: number }>();
   useEffect(() => {
     if (isCameraReady && !initialViewportSize) {
-      setInitialViewportSize({ height: viewportHeight, width: viewportWidth });
+      const {
+        viewport: { height, width },
+      } = threeStateGetter();
+      setInitialViewportSize({ width, height });
     }
-  }, [viewportHeight, isCameraReady, initialViewportSize, viewportWidth]);
+  }, [isCameraReady, initialViewportSize, threeStateGetter]);
 
   // Spheres are instanced, for performance reasons
   const instances = useMemo(() => {
@@ -207,15 +216,42 @@ const Scene = () => {
     axesHelper: defaultSettings.axesHelper,
   });
 
+  const { backgroundColor } = useControls("Scene", {
+    backgroundColor: defaultSettings.backgroundColor,
+  });
+
   const [isCameraReady, setIsCameraReady] = useState(false);
+
+  const cameraRef = useRef<ThreePerspectiveCamera>(null!);
+  const pointer = useThree((state) => state.pointer);
+
+  // Move the camera based on the mouse position
+  const targetPosition = new Vector3();
+  useFrame(() => {
+    if (orbitControls) return; // Skip if orbit controls are enabled
+    const camera = cameraRef.current;
+    camera.position.lerp(targetPosition.set(pointer.x * 2, pointer.y * 2, camera.position.z), 0.05);
+    camera.lookAt(0, 0, 0);
+  });
+
+  // // Reset camera position when orbit controls are disabled
+  const defaultCameraPosition = useMemo(() => new Vector3(0, 0, 50), []);
+  useEffect(() => {
+    if (orbitControls) return;
+    const camera = cameraRef.current;
+    camera.position.copy(defaultCameraPosition);
+    camera.lookAt(0, 0, 0);
+  }, [defaultCameraPosition, orbitControls]);
 
   return (
     <>
+      <color attach="background" args={[backgroundColor]} />
       {perf && <Perf position="top-left" />}
       {orbitControls && <OrbitControls />}
       <PerspectiveCamera
+        ref={cameraRef}
         makeDefault={true}
-        position={[0, 0, 50]}
+        position={defaultCameraPosition}
         fov={20}
         near={0.01}
         far={500}
