@@ -63,7 +63,16 @@ export const Carousel = () => {
   const offsetXValue = useSpring(0, { stiffness: 300, damping: 50, mass: 1 });
 
   const isMdUp = useMediaQuery(up("md"));
-  const currentOptions = Options.breakpoint[isMdUp ? "md" : "sm"];
+  const breakpointOptions = Options.breakpoint[isMdUp ? "md" : "sm"];
+
+  // Zoom out UI on debug mode, to visualize adding and removal of items
+  const currentOptions = !debug
+    ? breakpointOptions
+    : {
+        itemWidth: breakpointOptions.itemWidth / 2,
+        itemGap: breakpointOptions.itemGap / 2,
+        itemsScale: breakpointOptions.itemsScale,
+      };
 
   // Update the current virtualized items based on the current offset
   // runs on every frame
