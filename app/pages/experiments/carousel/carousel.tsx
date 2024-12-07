@@ -7,7 +7,6 @@ import { type RefObject, useRef, useState, memo } from "react";
 
 import { useMediaQuery } from "~/features/dom/hooks/use-media-query";
 import { up } from "~/features/dom/utils/screens";
-import { Text } from "~/features/ui/text";
 
 import { useDisableOverscroll } from "./hooks/use-disable-overscroll";
 import { calculateOverlap, setMotionValue } from "./utils";
@@ -193,24 +192,26 @@ export const Carousel = () => {
   );
 
   return (
-    <div className="w-full h-full bg-white flex items-center">
-      <div
-        className={cx("relative grid w-full touch-none overflow-hidden", debug && "outline-dashed outline-black/20")}
-        ref={containerRef}
-        style={{ visibility: "hidden" }}
-        {...bindGestures()}
-      >
-        {virtualItems.map((item) => (
-          <Item
-            key={item.index}
-            id={item.id}
-            index={item.index}
-            offsetValue={offsetXValue}
-            containerRef={containerRef}
-            currentOptions={currentOptions}
-            debug={debug}
-          />
-        ))}
+    <div className="w-full h-full flex justify-center items-center overflow-hidden">
+      <div className={cx("w-full h-full bg-[#f6f6f6] flex items-center", debug && "w-[50%] h-[50%]")}>
+        <div
+          className={cx("relative grid w-full touch-none", debug && "outline-dashed outline-black/30")}
+          ref={containerRef}
+          style={{ visibility: "hidden" }}
+          {...bindGestures()}
+        >
+          {virtualItems.map((item) => (
+            <Item
+              key={item.index}
+              id={item.id}
+              index={item.index}
+              offsetValue={offsetXValue}
+              containerRef={containerRef}
+              currentOptions={currentOptions}
+              debug={debug}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -281,14 +282,12 @@ const Item = memo(({ id, index, offsetValue, containerRef, currentOptions, debug
     >
       <motion.div
         className={cx(
-          "relative rounded-md origin-center shrink-0 aspect-[3/4] flex justify-center items-center bg-black",
+          "relative rounded-[16px] origin-center shrink-0 aspect-[3/4] flex justify-center items-center bg-[#DBDBF3]",
           debug && "opacity-50"
         )}
         style={{ scale, width: currentOptions.itemWidth }}
       >
-        <Text size="title-3" className="text-white">
-          {id}
-        </Text>
+        <span className="font-sans font-light text-[32px] lg:text-[40px] text-[#A5A5C9]">{id}</span>
       </motion.div>
     </motion.div>
   );
